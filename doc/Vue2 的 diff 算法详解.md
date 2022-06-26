@@ -151,7 +151,7 @@
 
  ![](./images/vue2diff9.png)
 
-如果拿新数组的第一个节点去老数组中查找，没找到，则创建一个新的节点插入到对应的节点前面。
+如果拿新数组的第一个节点去老数组中查找，没找到，则创建一个新的节点**插入到未处理的节点前面**。
 
 ### 推荐在渲染列表时为节点设置 key 
 
@@ -226,7 +226,7 @@
           ? oldKeyToIdx[newStartVnode.key]
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
         if (isUndef(idxInOld)) { // New element
-          // 没找到就进行创建
+          // 没找到就进行创建，并且插入到未处理的节点（oldStartVnode.elm）的前面
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
         } else {
           vnodeToMove = oldCh[idxInOld]
