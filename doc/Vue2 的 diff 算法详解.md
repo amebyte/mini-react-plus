@@ -86,13 +86,16 @@
 
 在新老两组VNode节点的左右头尾两侧都有一个变量标记，在遍历过程中这几个变量都会向中间靠拢，当oldStartIdx > oldEndIdx或者newStartIdx > newEndIdx时结束循环。 
 
-先进行以下几种情况的 diff：
+### diff 优化策略
+
+先进行以下4种情况的优化策略：
 
 1. 老数组的开始与新数组的开始：oldStartVnode, newStartVnode
 2. 老数组的结尾与新数组的结尾：oldEndVnode, newEndVnode
 3. 老数组的开始与新数组的结尾：oldStartVnode, newEndVnode
 4. 老数组的结尾与新数组的开始：oldEndVnode, newStartVnode 
-5. 如果以上4种情况都没找到，则从新数组的第一个节点去老数组中去查找，找到了就进行递归更新，没找到则创建新节点
+
+如果以上4种情况都没找到，则从新数组的第一个节点去老数组中去查找，找到了就进行递归更新，没找到则创建新节点。
 
 ### 老数组的开始与新数组的开始
 
@@ -251,7 +254,7 @@
   }
 ```
 
-### 具体实践
+
 
 ### 总结
 
