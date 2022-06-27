@@ -48,7 +48,19 @@ React 不能通过双端对比进行 diff 算法优化是因为目前 Fiber 上�
 
 我们先来讲 React 中的 diff 算法，然后再讲 Vue3 中的 diff 算法，最后讲一下 Vue2 中的 diff 算法。
 
+
+
+### Fiber 的结构
+
+
+
+### Fiber 的生成
+
+
+
 ### Reat 的 diff 算法
+
+
 
 
 
