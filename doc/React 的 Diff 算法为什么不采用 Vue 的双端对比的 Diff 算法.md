@@ -53,10 +53,10 @@ React 不能通过双端对比进行 diff 算法优化是因为目前 Fiber 上�
 
 ### Fiber 的结构
 
-在 React15 以前 React 的组件更新创建虚拟 DOM 和 diff 的过程是不可中断，如果需要更新组件树层级非常深的话，在 diff 的过程会非常占用浏览器的线程，而我们都知道浏览器执行 JavaScript 的线程和渲染真实 DOM 的线程是互斥的，也就是同一时间内，浏览器要么在执行 JavaScript 的代码运算，要么在渲染页面，如果 JavaScript 的代码运行时间过长则会造成页面卡顿。
+在 React15 以前 React 的组件更新创建虚拟 DOM 和 diff 的过程是不可中断，如果需要更新组件树层级非常深的话，在 diff 的过程会非常占用浏览器的线程，而我们都知道浏览器执行JavaScript 的线程和渲染真实 DOM 的线程是互斥的，也就是同一时间内，浏览器要么在执行 JavaScript 的代码运算，要么在渲染页面，如果 JavaScript 的代码运行时间过长则会造成页面卡顿。
 基于以上原因 React 团队在 React16 之后就改写了整个架构，将原来数组结构的虚拟DOM，改成叫 Fiber 的一种数据结构，基于这种 Fiber 的数据结构可以实现由原来不可中断的更新过程变成异步的可中断的更新。
 
-Fiber 的数据结构主要长成以下的样子
+Fiber 的数据结构主要长成以下的样子，主要通过 Fiber 的一些属性去保存组件相关的信息。 
 
 ```javascript
 function FiberNode(
@@ -115,10 +115,71 @@ this.child = null;
 this.sibling = null;
 ```
 
+举个例子，如下的组件结构： 
 
+```javascript
+function App() {
+  return (
+    <div>
+      i am
+      <span>Coboy</span>
+    </div>
+  )
+}
+```
+
+对应的 Fiber 链表结构： 
+
+那么 React 是将对应组件怎么生成一个 Fiber 链表数据的呢？
 
 
 ### Fiber 链表的生成
+
+上面的组件在经过 JSX 的编译之后，会变成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始启动，生成一棵 Fiber 树，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。
+
+```javascript
+export function reconcileChildren(returnFiber, children) {
+    if(isStringOrNumber(children)) {
+        return
+    }
+    const newChildren = isArray(children) ? children : [children]
+    let previousNewFiber = null;
+    let shouldTrackSideEffects = !!returnFiber.alternate
+    let oldFiber = returnFiber.alternate && returnFiber.alternate.child
+    let nextOldFiber = null
+    // 上次插入的位置
+    let lastPlacedIndex = 0;
+    let newIdx = 0;
+    
+    if(!oldFiber) {
+        for (; newIdx < newChildren.length; newIdx++) {
+            const newChild = newChildren[newIdx]
+            if(newChild === null) {
+                continue
+            }
+            const newFiber = createFiber(newChild, returnFiber)
+            // 记录当前的位置
+            lastPlacedIndex = placeChild(
+                newFiber,
+                lastPlacedIndex,
+                newIdx,
+                shouldTrackSideEffects // 初次渲染（false）还是更新（true）
+            )
+
+            if(previousNewFiber === null) {
+                returnFiber.child = newFiber
+            } else {
+                previousNewFiber.sibling = newFiber;
+            }
+
+            previousNewFiber = newFiber
+        }
+        return
+    }
+}
+```
+
+
 
 
 
@@ -138,5 +199,7 @@ this.sibling = null;
 
 
 
-### React、Vue2、Vue3 算法实践
+### 为什么 Vue 中不需要使用 Fiber
+
+
 
