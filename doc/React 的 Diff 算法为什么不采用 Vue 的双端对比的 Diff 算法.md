@@ -44,9 +44,9 @@ React 不能通过双端对比进行 diff 算法优化是因为目前 Fiber 上�
 
 **本人水平有限，错漏难免，如有错漏，恳请各位斧正。**
 
-都说“双端对比算法”，那么双端对比算法，到底是怎么样的呢？
+都说“双端对比算法”，那么双端对比算法，到底是怎么样的呢？跟 React 中的 diff 算法又有什么不同呢？
 
-我们先来讲 React 中的 diff 算法，然后再讲 Vue3 中的 diff 算法，最后讲一下 Vue2 中的 diff 算法。
+要了解这些，我们先了解 React 中的 diff 算法，然后再了解 Vue3 中的 diff 算法，最后讲一下 Vue2 中的 diff 算法，才能去比较一下他们的区别。
 
 最后讲一下为什么 Vue 中不需要使用 Fiber 架构。
 
@@ -135,24 +135,27 @@ function App() {
 
 ### Fiber 链表的生成
 
-上面的组件在经过 JSX 的编译之后，会变成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始启动，生成一棵 Fiber 树，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。
+上面的组件在经过 JSX 的编译之后，会变成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始启动，生成一棵 Fiber 树，这个棵树被称为：`workInProgress Fiber树` ，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。要先了解 Fiber 书的生成原理才更好去理解 Fiber 树 diff 的过程。
 
 ```javascript
 export function reconcileChildren(returnFiber, children) {
+    // 如果是字符串或者数字则不创建 Fiber
     if(isStringOrNumber(children)) {
         return
     }
     const newChildren = isArray(children) ? children : [children]
     let previousNewFiber = null;
     let shouldTrackSideEffects = !!returnFiber.alternate
+    // 老 Fiber
     let oldFiber = returnFiber.alternate && returnFiber.alternate.child
     let nextOldFiber = null
-    // 上次插入的位置
+    // 上一次协调返回的位置
     let lastPlacedIndex = 0;
     let newIdx = 0;
-    
+    // 如果不存在老 Fiber 则是初始化的过程，进行 Fiber 链表的创建
     if(!oldFiber) {
         for (; newIdx < newChildren.length; newIdx++) {
+            // 获取
             const newChild = newChildren[newIdx]
             if(newChild === null) {
                 continue
@@ -179,11 +182,11 @@ export function reconcileChildren(returnFiber, children) {
 }
 ```
 
+构建完的 `workInProgress Fiber树` 会在 `commit阶段` 渲染到页面。
 
+在组件状态数据发生变更的时候，会根据最新的状态数据先会生成新的虚拟DOM，再去构建一棵新的 `workInProgress Fiber 树`  ，而在重新协调构建新的 Fiber 树的过程也就是 React diff 发生的地方。接下来，我们就看看 React Diff 算法是怎么样的。
 
-
-
-### Reat 的 diff 算法
+### React 的 diff 算法
 
 
 
