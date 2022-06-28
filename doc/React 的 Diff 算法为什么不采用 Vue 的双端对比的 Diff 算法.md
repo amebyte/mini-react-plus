@@ -188,7 +188,7 @@ export function reconcileChildren(returnFiber, children) {
 
 ### React 的 diff 算法
 
-
+深度优先，有子节点，就遍历子节点，没有子节点，就找兄弟节点，没有兄弟节点，就找叔叔节点，叔叔节点也没有的话，就继续往上找，它爷爷的兄弟，如果一直没找到，就代表所有的更新任务都更新完毕了。
 
 
 
