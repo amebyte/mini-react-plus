@@ -143,7 +143,7 @@ function App() {
 
 ### Fiber 链表的生成
 
-上面的组件在经过 JSX 的编译之后，会变成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始启动，生成一棵 Fiber 树，这个棵树被称为：`workInProgress Fiber树` ，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。要先了解 Fiber 书的生成原理才更好去理解 Fiber 树 diff 的过程。
+上面的组件在经过 JSX 的编译之后，会变成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始启动，生成一棵 Fiber 树，这个棵树被称为：`workInProgress Fiber树` ，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。要先了解 Fiber 树的生成原理才更好去理解 Fiber 树 diff 的过程。
 
 ```javascript
 export function reconcileChildren(returnFiber, children) {
@@ -262,7 +262,7 @@ export function reconcileChildren(returnFiber, children) {
 3. 如果第一轮的比对，没能将所有的新节点都比对完毕，则继续从第一轮比对停止的位置继续开始循环新节点，拿每一个新节点去老节点里面进行查找，有匹配成功的则复用，没匹配成功的则在协调位置的时候打上 Placement 的标记。
 4. 在所有新节点比对完毕之后，检查还有没有没进行复用的旧节点，如果有，则全部删除。
 
-### 图解 React diff 算法
+### 图文解释 React diff 算法
 
  接下来我们使用图文进行 React diff 算法讲解，希望可以更进一步了解 React 的 diff 算法。
 
@@ -308,7 +308,7 @@ export function reconcileChildren(returnFiber, children) {
 
 ![](./images2/7.png)
 
-最后，老 Fiber 的 Map 中还存在一个 D 节点没处理，则需要对其进行删除操作。
+最后，老 Fiber 的 Map 中还存在一个 D 节点没处理，则需要对其进行删除标记操作。
 
 最终新 Fiber 将被协调成下面的样子：
 
@@ -347,7 +347,19 @@ export function reconcileChildren(returnFiber, children) {
 
 ### 为什么 Vue 中不需要使用 Fiber
 
-其实这个问题也可以叫做：为什么 Vue 不需要时间分片？
+其实这个问题也可以叫做：为什么 Vue 不需要时间分片？对于这个问题其实尤雨溪也在英文社区里回答过，也有前端大牛翻译发布在公众号上，那么下面我也进行一下总结。
+
+首先时间分片是为了解决 CPU 进行大量计算的问题，因为 React 本身架构的问题，在默认的情况下更新会进行过多的计算，就算使用 React 提供的性能优化 API，进行设置，也会因为开发者本身的问题，可能依然存在过多计算的问题。
+
+而 Vue 通过响应式依赖跟踪，在默认的情况下可以做到只进行组件树级别的更新计算，而默认下 React 是做不到的（据说 React 已经在进行这项优化工作了），再者 Vue 是通过 template 编译优化，可以对静态节点进行优化处理，而 React 是通过 JSX 编译是做不到的。
+
+React 为了解决更新的时候进行过多计算的问题引入了时间分片，但同时又带来了额外的计算开销，就是任务协调的计算，虽然 React 也使用最小堆等的算法进行优化，但相对 Vue 还是多了额外的性能开销，因为 Vue 没有时间分片，所以没有这方面的性能担忧。
+
+根据研究表明，人类的肉眼对 100 毫秒以内的时间并不敏感，所以时间分片只对于处理超过 100 毫秒以上的计算才有很好的收益，而 Vue 的更新计算是很少出现 100 毫秒以上的计算的，所以 Vue 引入时间分片的收益并不划算。
+
+### 总结
+
+经常有人在群里或者在某呼上，一开口就 XX 框架不好，我认为只有你是这两个框架的深度用户才有资格进行评论，而不是只写了一个 demo 就进行评头论足。
 
 
 
