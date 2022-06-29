@@ -234,7 +234,7 @@ export function reconcileChildren(returnFiber, children) {
 
 如果经过第一轮比对，新节点还存在未比对的，则继续循环查找。
 
-先剩下未比对的老 Fiber 节点全部处理成一个 key 或 index 为 key，Fiber 节点为 value 的 Map 中，这样就可以，以 O(1) 复杂度，通过新 Fiber 的 key 去 Map 对象中查找匹配的 Fiber，找到了，则删除 Map 对象中的老 Fiber 数据，然后复用匹配到的 Fiber 数据。
+先将剩下未比对的老 Fiber 节点全部处理成一个 老 Fiber 的 key 或老 Fiber 的  index 为 key，Fiber 节点为 value 的 Map 中，这样就可以，以 O(1) 复杂度，通过新 Fiber 的 key 去 Map 对象中查找匹配的 Fiber，找到了，则删除 Map 对象中的老 Fiber 数据，然后复用匹配到的 Fiber 数据。
 
 接下来，不管有没有匹配到都进行位置协调，记录最新的位置信息，新增的 Fiber 因为没有存在老 Fiber 而会被打上 Placement 的标记，在将来提交的阶段将会被进行新增操作。这个过程跟第一轮最后的处理是一样的。
 
@@ -247,7 +247,7 @@ export function reconcileChildren(returnFiber, children) {
 
 #### 如何协调更新位置信息
 
-如果是初始渲染，那么协调位置就只是记录当前元素下标的位置到 Fiber 节点上。如果是更新阶段，就先判断有没有老 Fiber 节点，如果没有老 Fiber 节点，则说明该节点需要创建，就给当前新的 Fiber 节点打上一个 Placement 的标记，如果有老 Fiber 节点，则判断老 Fiber 节点的位置是否比上一次协调的返回的位置小，如果是，则说明该节点需要移动，给新 Fiber 节点打上一个 Placement 的标记，并继续返回上一次协调返回的位置；如果老 Fiber 节点的位置比上一次协调返回的位置大，则说明该节点不需要进行位置移动操作，就返回老 Fiber 的位置即可。
+如果是初始渲染，那么协调位置就只是记录当前元素下标的位置到 Fiber 节点上。如果是更新阶段，就先判断有没有老 Fiber 节点，如果没有老 Fiber 节点，则说明该节点需要创建，就给当前新的 Fiber 节点打上一个 Placement 的标记，如果有老 Fiber 节点，则判断老 Fiber 节点的位置是否比上一次协调的返回的位置小，如果是，则说明该节点需要移动，给新 Fiber 节点打上一个 Placement 的标记，并继续返回上一次协调返回的位置；如果老 Fiber 节点的位置大或者等于上一次协调返回的位置，则说明该节点不需要进行位置移动操作，就返回老 Fiber 的位置即可。
 
 这里需要说明的一点，为什么移动和新增节点都是 Placement 的标记呢？
 
@@ -264,7 +264,35 @@ export function reconcileChildren(returnFiber, children) {
 
 ### 图解 React diff 算法
 
+ 接下来我们使用图文进行 React diff 算法讲解，希望可以更进一步了解 React 的 diff 算法。
 
+![](./images2/2.jpg)
+
+在上图中，第一轮循环比对的时候，新虚拟节点A 和第一个老 Fiber 节点是可以匹配的，所以就可以复用老 Fiber 的节点信息了，并且在协调的位置信息的时候，是存在老 Fiber 的，那么就去比较老 Fiber 的位置和上一次协调返回的位置进行比较（上一次协调返回的位置默认为 0），老 Fiber 的位置是等于新 Fiber 的位置，根据协调规则，位置不需要移动，返回老 Fiber 的位置信息即可，很明显这次返回的协调位置是 0。
+
+到了第二个新虚拟节点 C 的时候，C 和老 Fiber 中的 B 是不匹配的，则第一轮比对结束。
+
+第一轮比对结束之后，新虚拟DOM是还存在未比对的节点的，那么继续开始第二轮的比对。
+
+在第二轮比对开始之前，会先将剩下未比对的老 Fiber 节点全部处理成一个 老 Fiber 的 key 或老 Fiber 的  index 为 key，Fiber 节点为 value 的 Map 中。
+
+![](./images2/3.jpg)
+
+然后进行第二轮的比对。
+
+ ![](./images2/4.jpg)
+
+虚拟DOM C 可以通过 C 的 key 值在老 Fiber 的 Map 中找到老 Fiber C 节点，这个时候会 C 进行暂存，然后把 Map 中的 C 进行删除，再进行老 Fiber 的节点信息复用，然后去协调比对位置信息。
+
+老 Fiber C 的位置是 2，然后上一次新 Fiber A 协调比对返回的位置信息是 0，那么这一次协调的位置是老 Fiber 的位置比上一次协调返回的位置大，那么这次协调是不用标记 Placement 标记的，直接返回老 Fiber C 的位置 2。
+
+ ![](./images2\5.jpg)
+
+虚拟DOM E，在老 Fiber 的 Map 中是没有匹配成功的，所以在创建 Fiber E 的时候，是没有进行老 Fiber 的复用的，去协调比对位置的时候，根据协调位置规则，没有老 Fiber，就标记 Placement 并返回上一次协调返回的位置，那么上一次 C 协调位置返回的位置信息是 2，这一次 E 协调位置依然返回 2。
+
+![](./images2/6.jpg)
+
+虚拟DOM B 也在 Fiber 的 Map 中匹配成功了，那么匹配成功之后，就对老 Fiber B 进行暂存，然后删除老 Fiber B,再进行信息复用，然后又进行协调
 
 ### Vue3 的 diff 算法
 
