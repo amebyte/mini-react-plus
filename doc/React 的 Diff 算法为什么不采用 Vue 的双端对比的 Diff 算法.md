@@ -266,6 +266,16 @@ export function reconcileChildren(returnFiber, children) {
 
  接下来我们使用图文进行 React diff 算法讲解，希望可以更进一步了解 React 的 diff 算法。
 
+####  最简单的 diff 场景
+
+![](./images2/1.jpg)
+
+上图的 diff 场景是最简单的一种，新虚拟DOM 从左到右都能和老 Fiber 的节点一一匹配成功，协调位置的时候，老 Fiber A 的位置是 0，默认上一次协调返回的位置也是 0，
+
+接下来我们看看复杂的 diff 场景。
+
+#### 复杂的 diff 场景
+
 ![](./images2/2.jpg)
 
 在上图中，第一轮循环比对的时候，新虚拟节点A 和第一个老 Fiber 节点是可以匹配的，所以就可以复用老 Fiber 的节点信息了，并且在协调的位置信息的时候，是存在老 Fiber 的，那么就去比较老 Fiber 的位置和上一次协调返回的位置进行比较（上一次协调返回的位置默认为 0），老 Fiber 的位置是等于新 Fiber 的位置，根据协调规则，位置不需要移动，返回老 Fiber 的位置信息即可，很明显这次返回的协调位置是 0。
@@ -292,7 +302,17 @@ export function reconcileChildren(returnFiber, children) {
 
 ![](./images2/6.jpg)
 
-虚拟DOM B 也在 Fiber 的 Map 中匹配成功了，那么匹配成功之后，就对老 Fiber B 进行暂存，然后删除老 Fiber B,再进行信息复用，然后又进行协调
+虚拟DOM B 也在 Fiber 的 Map 中匹配成功了，那么匹配成功之后，就对老 Fiber B 进行暂存，然后删除老 Fiber B,再进行信息复用，然后又进行位置协调，老 Fiber B 的位置是 1，上一次协调返回的位置是 2，根据协调位置规则，老 Fiber 的位置小于上一次协调返回的位置，则标记 Placement 并返回上一次协调返回的位置 2。
+
+![](./images2/7.png)
+
+最后，老 Fiber 的 Map 中还存在一个 D 节点没处理，则需要对其进行删除操作。
+
+最终新 Fiber 将被协调成下面的样子：
+
+ ![](./images2/8.jpg)
+
+那么根据图片，我们又可以得出一个结论，匹配到的老 Fiber 如果和新 Fiber 相同或者在新 Fiber 位置的右边则不需要进行移动标记。
 
 ### Vue3 的 diff 算法
 
