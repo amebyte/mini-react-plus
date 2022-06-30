@@ -320,7 +320,7 @@ export function reconcileChildren(returnFiber, children) {
 
 
 
-
+更加详细的 Vue3 diff 算法解析可以查看我这篇文章：[根据大崔哥的mini-vue来理解vue3中的diff算法](https://juejin.cn/post/7045976871116210213)
 
 ### Vue2 的 diff 算法
 
@@ -340,6 +340,8 @@ export function reconcileChildren(returnFiber, children) {
 如果是老节点列表先循环完毕，这个时候如果新节点列表还有剩余的节点，则说明这些节点都是需要新增的节点，直接把这些节点创建并插入到 DOM 中就行了。
 
 如果是新节点列表先循环完毕，这个时候如果老节点列表还有剩余节点，则说明这些节点都是要被废弃的节点，是应该被删除的节点，直接批量删除就可以了。
+
+更加详细的 Vue2 diff 算法可以查看我这篇文章：[Vue2 的 diff 算法详解](https://juejin.cn/post/7113586699808014373)
 
 ### React、Vue3、Vue2 的 diff 算法对比
 
