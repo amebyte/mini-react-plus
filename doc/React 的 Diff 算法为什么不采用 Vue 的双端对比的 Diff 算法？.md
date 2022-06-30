@@ -2,6 +2,10 @@
 
 ### 前言
 
+
+
+### React 官方的解析
+
 其实为什么 React 不采用 Vue 的双端对比算法，React 官方已经在源码的注释里已经说明了，我们来看一下 React 官方是怎么说的。
 
 ```javascript
@@ -245,7 +249,7 @@ export function reconcileChildren(returnFiber, children) {
 更新上一轮 Fiber 变量的值，就是把这一轮的 Fiber 设置成下一轮的 Fiber;
 更新比对的老 Fiber 的值。
 
-#### 如何协调更新位置信息
+#### 重点如何协调更新位置信息
 
 如果是初始渲染，那么协调位置就只是记录当前元素下标的位置到 Fiber 节点上。如果是更新阶段，就先判断有没有老 Fiber 节点，如果没有老 Fiber 节点，则说明该节点需要创建，就给当前新的 Fiber 节点打上一个 Placement 的标记，如果有老 Fiber 节点，则判断老 Fiber 节点的位置是否比上一次协调的返回的位置小，如果是，则说明该节点需要移动，给新 Fiber 节点打上一个 Placement 的标记，并继续返回上一次协调返回的位置；如果老 Fiber 节点的位置大或者等于上一次协调返回的位置，则说明该节点不需要进行位置移动操作，就返回老 Fiber 的位置即可。
 
@@ -253,7 +257,7 @@ export function reconcileChildren(returnFiber, children) {
 
 因为我们是在协调一个子节点列表，所以不管是新增还是移动都是属于位置是需要发生变化的，所以新增和移动都是同一种操作情况。
 
-
+#### 小结
 
 总个来说，React Diff 算法分以下几个步骤：
 
@@ -389,7 +393,9 @@ React 为了解决更新的时候进行过多计算的问题引入了时间分�
 
 ### 总结
 
-我们先由“ React 的 Diff 算法为什么不采用 Vue 的双端对比的 Diff 算法？”
+我们先由 “ React 的 Diff 算法为什么不采用 Vue 的双端对比的 Diff 算法？” 这个问题引出对 React 中的一些知识点的学习理解，比如什么是 Fiber，Fiber 链表是如何生成的，然后详细解析了 React diff 算法，还对 React diff 算法进行图文并茂解析，让我们可以更加理解 React 的 diff 算法。
+其后，我们又简单介绍了 Vue3 和 Vue2 的 diff 算法，之后对 React、Vue3、Vue2之间的算法的异同进行了讲解。
+最后我们又总结了一下尤雨溪对 “为什么 Vue 不需要时间分片？” 这个问题的解析。 
 
 
 
