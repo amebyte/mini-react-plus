@@ -136,7 +136,7 @@ function App() {
 
  ![](./images2/1.png)
 
-那么以上的 Fiber 链表的数据结构有什么特点，就是任何一个位置的 Fiber 节点，都可以非常容易知道它的父 Fiber, 第一个子元素的 Fiber,和它的兄弟节点 Fiber。却不容易知道它前一个 Fiber 节点是谁，这就是 React 中单向链表 Fiber 节点的特点。
+那么以上的 Fiber 链表的数据结构有什么特点，就是任何一个位置的 Fiber 节点，都可以非常容易知道它的父 Fiber, 第一个子元素的 Fiber,和它的兄弟节点 Fiber。却不容易知道它前一个 Fiber 节点是谁，这就是 React 中单向链表 Fiber 节点的特点。也正是因为这些即便在协调的过程被中断了，再恢复协调的时候，依然知道当前的 父节点和孩子节点等信息。
 
 那么 React 是将对应组件怎么生成一个 Fiber 链表数据的呢？
 
@@ -146,9 +146,10 @@ function App() {
 上面的组件在经过 JSX 的编译之后，初始化的时候会生成成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始进行协调，生成一棵 Fiber 树，这个棵树被称为：`workInProgress Fiber 树` ，意思是正在工作的 Fiber 树，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。要先了解 Fiber 树的生成原理才更好去理解 Fiber 树 diff 的过程。
 
 以下是一段简单版的 Fiber 链表生成的代码片段。
-这个协调子节点的函数接收两个参数，一个是父 Fiber，一个是这个节点的子元素的虚拟 DOM数据。
+这个协调子节点的函数接收两个参数，returnFiber 是父 Fiber，children 是这个节点的子元素的虚拟 DOM数据。
 
 ```javascript
+// 这个协调子节点的函数接收两个参数，returnFiber 是父 Fiber，children 是这个节点的子元素的虚拟 DOM数据。
 export function reconcileChildren(returnFiber, children) {
     // 如果是字符串或者数字则不创建 Fiber
     if(isStringOrNumber(children)) {
@@ -169,14 +170,15 @@ export function reconcileChildren(returnFiber, children) {
     // 如果不存在老 Fiber 则是初始化的过程，进行 Fiber 链表的创建
     if(!oldFiber) {
         for (; newIdx < newChildren.length; newIdx++) {
-            // 获取
+            // 获取节点元素内容
             const newChild = newChildren[newIdx]
             // 如果节点为 null 则不需要创建 fiber 节点
             if(newChild === null) {
                 continue
             }
+            // 创建新 fiber 的时候记录了关键的父 fiber 等重要信息
             const newFiber = createFiber(newChild, returnFiber)
-            // 记录当前的位置
+            // 记录当前每一个 fiber 的位置
             lastPlacedIndex = placeChild(
                 newFiber,
                 lastPlacedIndex,
@@ -192,7 +194,7 @@ export function reconcileChildren(returnFiber, children) {
                 // 上一轮 fiber 的兄弟节点是这一轮的 fiber 节点
                 previousNewFiber.sibling = newFiber;
             }
-		   // 记录上一轮的 fiber
+		   // 记录上一轮的 fiber，既是这一轮的 fiber 便是下一轮的上一轮 fiber
             previousNewFiber = newFiber
         }
         return
