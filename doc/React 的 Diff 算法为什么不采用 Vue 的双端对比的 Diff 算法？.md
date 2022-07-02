@@ -378,7 +378,12 @@ export function reconcileChildren(returnFiber, children) {
 
 React 中是先处理左边部分，左边部分处理不了，再进行复杂部分的处理；Vue2 则先进行首尾、首首、尾尾部分的处理，然后再进行中间复杂部分的处理；Vue3 则先处理首尾部分，然后再处理中间复杂部分，Vue2 和 Vue3 最大的区别就是在处理中间复杂部分使用了最长递增子序列算法找出稳定序列的部分。
 
-**在处理老节点部分，都需要把老节点处理 key - value 的 Map 数据结构，所以不同是 React, 还是 Vue，在写动态列表的时候，都需要设置一个唯一值 key，这样在 diff 算法处理的时候性能才最大化**。
+**在处理老节点部分，都需要把节点处理 key - value 的 Map 数据结构，方便在往后的比对中可以快速通过节点的 key 取到对应的节点。同样在比对两个新老节点是否相同时，key 是否相同也是非常重要的判断标准。所以不同是 React, 还是 Vue，在写动态列表的时候，都需要设置一个唯一值 key，这样在 diff 算法处理的时候性能才最大化**。
+
+在移动或者创建节点的时候都使用了 `insertBefore(newnode,existingnode)`  这个 API：
+
+1. newnode 必需。需要插入的节点对象。
+2. existingnode 可选。在其之前插入新节点的子节点。如果未规定，则 insertBefore 方法会在结尾插入 newnode。 
 
 #### 不同点
 
