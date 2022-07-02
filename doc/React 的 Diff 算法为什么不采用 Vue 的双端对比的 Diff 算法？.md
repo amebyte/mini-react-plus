@@ -143,7 +143,7 @@ function App() {
 
 ### Fiber 链表的生成
 
-上面的组件在经过 JSX 的编译之后，会变成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始启动，生成一棵 Fiber 树，这个棵树被称为：`workInProgress Fiber树` ，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。要先了解 Fiber 树的生成原理才更好去理解 Fiber 树 diff 的过程。
+上面的组件在经过 JSX 的编译之后，初始化的时候会生成成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始进行协调，生成一棵 Fiber 树，这个棵树被称为：`workInProgress Fiber树` ，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。要先了解 Fiber 树的生成原理才更好去理解 Fiber 树 diff 的过程。
 
 ```javascript
 export function reconcileChildren(returnFiber, children) {
@@ -201,7 +201,7 @@ export function reconcileChildren(returnFiber, children) {
 
 在组件状态数据发生变更的时候，会根据最新的状态数据先会生成新的虚拟DOM，再去构建一棵新的 `workInProgress Fiber 树`  ，而在重新协调构建新的 Fiber 树的过程也就是 React Diff 发生的地方。接下来，我们就看看 React Diff 算法是怎么样的。
 
-### React 的 diff 算法
+### React 的 Diff 算法
 
 深度优先，有子节点，就遍历子节点，没有子节点，就找兄弟节点，没有兄弟节点，就找叔叔节点，叔叔节点也没有的话，就继续往上找，它爷爷的兄弟，如果一直没找到，就代表所有的更新任务都更新完毕了。
 
@@ -266,7 +266,7 @@ export function reconcileChildren(returnFiber, children) {
 
  接下来我们使用图文进行 React Diff 算法讲解，希望可以更进一步了解 React 的 Diff 算法。
 
-####  最简单的 diff 场景
+####  最简单的 Diff 场景
 
 ![](./images2/1.jpg)
 
@@ -276,7 +276,7 @@ export function reconcileChildren(returnFiber, children) {
 
 接下来我们看看复杂的 Diff 场景。
 
-#### 复杂的 diff 场景
+#### 复杂的 Diff 场景
 
 ![](./images2/2.jpg)
 
@@ -328,7 +328,7 @@ export function reconcileChildren(returnFiber, children) {
 通过这样左右进行比对，最后就可以把真正复杂部分进行范围锁定了。
 左右比对完之后，如果新节点已经比对完了，老节点列表还存在节点未比对，则删除老节点列表上的未比对的节点，如果老节点已经比对完了，新节点列表还存在未比对的节点则进行创建。
 
-### 第二轮，复杂情况的比对
+#### 第二轮，复杂情况的比对
 
 如果新节点未比对完，老节点也未比对完，则进行最后最复杂的处理。
 
